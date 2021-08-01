@@ -102,6 +102,20 @@ public class EmployeePayrollDatabaseService
 		}
 		return employeePayrollData;
 	}
+	
+	public int readData(String calculate, String gender) throws EmployeePayrollException {
+        int sum = 0;
+        String sql = String.format("SELECT %s(Salary) FROM employee_payroll WHERE GENDER = '%s' GROUP BY Gender;", calculate, gender);
+        try(Connection connection= this.getConnection()) {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            sum = resultSet.getInt(1);
+        } catch (SQLException sqlException) {
+            throw new EmployeePayrollException("Cannot connect to database", EmployeePayrollException.ExceptionType.CONNECTION_FAIL);
+        }
+        return sum;
+    }
 
 	private void prepareStatementForEmployeeData() throws EmployeePayrollException
 	{
