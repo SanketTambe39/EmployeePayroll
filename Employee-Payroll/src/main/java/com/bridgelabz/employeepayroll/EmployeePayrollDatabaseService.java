@@ -111,8 +111,7 @@ public class EmployeePayrollDatabaseService {
         }
     }
 
-    public EmployeePayrollData addNewEmployee(String name, double salary, LocalDate startDate, String gender, String deparmentName) throws EmployeePayrollException {
-        List<String> departments= new ArrayList<>(Arrays.asList("Marketing", "Technology", "Sales"));
+    public EmployeePayrollData addNewEmployee(String name, double salary, LocalDate startDate, String gender, int department) throws EmployeePayrollException {
         int employeeID = -1;
         Connection connection;
         EmployeePayrollData employeePayrollData = null;
@@ -122,7 +121,7 @@ public class EmployeePayrollDatabaseService {
             throw new EmployeePayrollException(sqlException.getMessage(), EmployeePayrollException.ExceptionType.CANNOT_EXECUTE_QUERY);
         }
         try(Statement statement = connection.createStatement()) {
-            String sql = String.format("INSERT INTO employee_payroll(Name, Salary, StartDate, Gender, DepartmentID) VALUES ('%s', '%s', '%s', '%s', '%s')", name, salary, Date.valueOf(startDate), gender, departments.indexOf(deparmentName));
+        	String sql = String.format("INSERT INTO employee_payroll(Name, Salary, StartDate, Gender, DepartmentID) VALUES ('%s', '%s', '%s', '%s', '%s')", name, salary, Date.valueOf(startDate), gender, department);
             int rowAffected = statement.executeUpdate(sql, statement.RETURN_GENERATED_KEYS);
             if(rowAffected == 1) {
                 ResultSet resultSet = statement.getGeneratedKeys();
@@ -133,7 +132,7 @@ public class EmployeePayrollDatabaseService {
             throw new EmployeePayrollException(sqlException.getMessage(), EmployeePayrollException.ExceptionType.CONNECTION_FAIL);
         }
         try(Statement statement = connection.createStatement()) {
-            String sql = String.format("INSERT INTO employee_department(EmployeeID, DepartmentID) VALUES ('%s', '%s')", employeeID, departments.indexOf(deparmentName));
+        	String sql = String.format("INSERT INTO employee_department(EmployeeID, DepartmentID) VALUES ('%s', '%s')", employeeID, department);
             statement.executeUpdate(sql);
         } catch (SQLException sqlException) {
             throw new EmployeePayrollException(sqlException.getMessage(), EmployeePayrollException.ExceptionType.CONNECTION_FAIL);
