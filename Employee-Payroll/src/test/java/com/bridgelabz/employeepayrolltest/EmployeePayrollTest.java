@@ -1,5 +1,6 @@
 package com.bridgelabz.employeepayrolltest;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.Assert;
@@ -35,8 +36,10 @@ public class EmployeePayrollTest
 	public void givenEmployeePayrollData_ShouldNumberOfEmployeesWithinDateRange() throws EmployeePayrollException
 	{
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
+		LocalDate start = LocalDate.of(2020, 03, 01);
+		LocalDate end = LocalDate.of(2020, 04, 30);
 		List<EmployeePayrollData> employeePayrollData = employeePayrollService.readEmployeePayrollData(DATABASE_IO,
-				"2018-06-01", "2020-04-30");
+				start, end);
 		Assert.assertEquals(3, employeePayrollData.size());
 	}
 
@@ -88,7 +91,7 @@ public class EmployeePayrollTest
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
 		Assert.assertEquals(200000, employeePayrollService.readEmployeePayrollData("MAX", "F"));
 	}
-	
+
 	@Test
 	public void givenEmployeePayrollData_ShouldReturnMaximumOfMaleEmployeeSalaries() throws EmployeePayrollException
 	{
@@ -108,5 +111,15 @@ public class EmployeePayrollTest
 	{
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
 		Assert.assertEquals(2, employeePayrollService.readEmployeePayrollData("COUNT", "M"));
+	}
+
+	@Test
+	public void givenNewEmployee_WhenAdded_ShouldSyncWithDatabase() throws EmployeePayrollException
+	{
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
+		employeePayrollService.readEmployeePayrollData(DATABASE_IO);
+		employeePayrollService.addNewEmployee("Sanket", 130000, LocalDate.now(), "M");
+		boolean result = employeePayrollService.checkEmployeePayrollInSyncWithDatabase("Sanket");
+		Assert.assertTrue(result);
 	}
 }

@@ -30,12 +30,21 @@ public class EmployeePayrollDatabaseService
 		return connection;
 	}
 
-	public List<EmployeePayrollData> readData(LocalDate start, LocalDate end) throws EmployeePayrollException {
-        String sql = null;
-        if(start != null)
-            sql = String.format("SELECT * FROM employee_payroll WHERE Start BETWEEN '%s' AND '%s';", Date.valueOf(start), Date.valueOf(end));
-        if(start == null)
-            sql = "SELECT * FROM employee_payroll";
+	public List<EmployeePayrollData> readData() throws EmployeePayrollException
+	{
+		String sql = "SELECT * FROM employee_payroll";
+		return getEmployeePayrollDataUsingDatabase(sql);
+	}
+
+	public List<EmployeePayrollData> readData(LocalDate start, LocalDate end) throws EmployeePayrollException
+	{
+		String sql = String.format("SELECT * FROM EmployeePayroll WHERE StartDate BETWEEN '%s' AND '%s';",
+				Date.valueOf(start), Date.valueOf(end));
+		return getEmployeePayrollDataUsingDatabase(sql);
+	}
+
+	private List<EmployeePayrollData> getEmployeePayrollDataUsingDatabase(String sql) throws EmployeePayrollException
+	{
 		List<EmployeePayrollData> employeePayrollData = new ArrayList();
 		try (Connection connection = this.getConnection())
 		{
@@ -66,7 +75,7 @@ public class EmployeePayrollDatabaseService
 
 	public List<EmployeePayrollData> getEmployeePayrollData(String name) throws EmployeePayrollException
 	{
-		List<EmployeePayrollData> employeePayrollData = null;
+		List<EmployeePayrollData> employeePayrollData;
 		if (this.employeePayrollPreparedStatement == null)
 			this.prepareStatementForEmployeeData();
 		try
@@ -102,20 +111,25 @@ public class EmployeePayrollDatabaseService
 		}
 		return employeePayrollData;
 	}
-	
-	public int readData(String calculate, String gender) throws EmployeePayrollException {
-        int sum = 0;
-        String sql = String.format("SELECT %s(Salary) FROM employee_payroll WHERE GENDER = '%s' GROUP BY Gender;", calculate, gender);
-        try(Connection connection= this.getConnection()) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
-            resultSet.next();
-            sum = resultSet.getInt(1);
-        } catch (SQLException sqlException) {
-            throw new EmployeePayrollException("Cannot connect to database", EmployeePayrollException.ExceptionType.CONNECTION_FAIL);
-        }
-        return sum;
-    }
+
+	public int readData(String calculate, String gender) throws EmployeePayrollException
+	{
+		int result;
+		String sql = String.format("SELECT %s(Salary) FROM employee_payroll WHERE GENDER = '%s' GROUP BY Gender;",
+				calculate, gender);
+		try (Connection connection = this.getConnection())
+		{
+			Statement statement = connection.createStatement();
+			ResultSet resultSet = statement.executeQuery(sql);
+			resultSet.next();
+			result = resultSet.getInt(1);
+		} catch (SQLException sqlException)
+		{
+			throw new EmployeePayrollException("Cannot connect to database",
+					EmployeePayrollException.ExceptionType.CONNECTION_FAIL);
+		}
+		return result;
+	}
 
 	private void prepareStatementForEmployeeData() throws EmployeePayrollException
 	{
@@ -130,4 +144,32 @@ public class EmployeePayrollDatabaseService
 					EmployeePayrollException.ExceptionType.CANNOT_EXECUTE_QUERY);
 		}
 	}
+
+	public EmployeePayrollData addNewEmployee(String name, double salary, LocalDate startDate, String gender)
+			throws EmployeePayrollException
+	{
+		int employeeID = -1;
+		EmployeePayrollData employeePayrollData = null;
+		String sql = String.format(
+				"INSERT INTO employee_payroll(Name, Salary, Start, Gender) VALUES ('%s', '%s', '%s', '%s')", name,
+				salary, Date.valueOf(startDate), gender);
+		try (Connection connection = this.getConnection())
+		{
+			Statement statement = connection.createStatement();
+			int rowAffected = statement.executeUpdate(sql, statement.RETURN_GENERATED_KEYS);
+			if (rowAffected == 1)
+			{
+				ResultSet resultSet = statement.getGeneratedKeys();
+				if (resultSet.next())
+					employeeID = resultSet.getInt(1);
+			}
+			employeePayrollData = new EmployeePayrollData(employeeID, name, salary, startDate);
+		} catch (SQLException sqlException)
+		{
+			throw new EmployeePayrollException(sqlException.getMessage(),
+					EmployeePayrollException.ExceptionType.CANNOT_EXECUTE_QUERY);
+		}
+		return employeePayrollData;
+	}
+
 }
