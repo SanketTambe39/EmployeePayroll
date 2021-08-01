@@ -7,6 +7,8 @@ import java.util.List;
 
 public class EmployeePayrollDatabaseService
 {
+	private PreparedStatement employeePayrollPreparedStatement;
+
 	EmployeePayrollDatabaseService()
 	{
 
@@ -24,7 +26,7 @@ public class EmployeePayrollDatabaseService
 		return connection;
 	}
 
-	public List<EmployeePayrollData> readData(LocalDate start, LocalDate end)
+	public List<EmployeePayrollData> readData()
 	{
 		String sql = "select * from employee_payroll";
 		List<EmployeePayrollData> employeePayrollData = new ArrayList();
@@ -32,6 +34,42 @@ public class EmployeePayrollDatabaseService
 		{
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery(sql);
+			employeePayrollData = this.getEmployeePayrollData(resultSet);
+		} catch (SQLException sqlException)
+		{
+			sqlException.printStackTrace();
+		}
+		return employeePayrollData;
+	}
+
+	public int updateEmployeeData(String name, double salary)
+	{
+		return this.updateEmployeeDataUsingPreparedStatement(name, salary);
+	}
+
+	public int updateEmployeeDataUsingPreparedStatement(String name, double salary)
+	{
+		String sql = String.format("UPDATE employee_payroll SET Salary = %.2f WHERE Name = '%s';", salary, name);
+		try (Connection connection = this.getConnection())
+		{
+			PreparedStatement preparedStatement = connection.prepareStatement(sql);
+			return preparedStatement.executeUpdate(sql);
+		} catch (SQLException sqlException)
+		{
+			sqlException.printStackTrace();
+		}
+		return 0;
+	}
+
+	public List<EmployeePayrollData> getEmployeePayrollData(String name)
+	{
+		List<EmployeePayrollData> employeePayrollData = null;
+		if (this.employeePayrollPreparedStatement == null)
+			this.prepareStatementForEmployeeData();
+		try
+		{
+			employeePayrollPreparedStatement.setString(1, name);
+			ResultSet resultSet = employeePayrollPreparedStatement.executeQuery();
 			employeePayrollData = this.getEmployeePayrollData(resultSet);
 		} catch (SQLException sqlException)
 		{
@@ -59,4 +97,13 @@ public class EmployeePayrollDatabaseService
 		}
 		return employeePayrollData;
 	}
+	private void prepareStatementForEmployeeData() {
+        try {
+            Connection connection = this.getConnection();
+            String sql = "SELECT * FROM employee_payroll WHERE Name = ?";
+            employeePayrollPreparedStatement = connection.prepareStatement(sql);
+        } catch (SQLException sqlException) {
+            sqlException.printStackTrace();
+        }
+    }
 }
