@@ -113,14 +113,23 @@ public class EmployeePayrollTest
 		Assert.assertEquals(2, employeePayrollService.readEmployeePayrollData("COUNT", "M"));
 	}
 
+	@Test
+	public void givenNewEmployee_WhenAdded_ShouldSyncWithDatabase() throws EmployeePayrollException
+	{
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
+		employeePayrollService.readEmployeePayrollData(DATABASE_IO);
+		employeePayrollService.addNewEmployee("Sanket Tambe", 130000, LocalDate.now(), "M", 3,true);
+		boolean result = employeePayrollService.checkEmployeePayrollInSyncWithDatabase("Sanket");
+		Assert.assertTrue(result);
+	}
 	
-	  @Test 
-	  public void givenNewEmployee_WhenAdded_ShouldSyncWithDatabase() throws
-	  EmployeePayrollException { EmployeePayrollService employeePayrollService =
-	  new EmployeePayrollService();
-	  employeePayrollService.readEmployeePayrollData(DATABASE_IO);
-	  employeePayrollService.addNewEmployee("Sanket Tambe", 130000,LocalDate.now(), "M", 3);
-	  boolean result = employeePayrollService.checkEmployeePayrollInSyncWithDatabase("Sanket");
-	  Assert.assertTrue(result); }
-	 
+	@Test
+    public void givenEmployeeName_WhenRemoved_ShouldRemoveEmployeeFromList() throws EmployeePayrollException {
+        EmployeePayrollService employeePayrollService = new EmployeePayrollService();
+        employeePayrollService.readEmployeePayrollData(DATABASE_IO);
+        employeePayrollService.deleteEmployee("Raj");
+        boolean result = employeePayrollService.checkIfDeleted("Raj");
+        Assert.assertTrue(result);
+    }
+
 }
