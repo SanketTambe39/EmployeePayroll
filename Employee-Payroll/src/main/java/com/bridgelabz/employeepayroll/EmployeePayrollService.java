@@ -1,5 +1,6 @@
 package com.bridgelabz.employeepayroll;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class EmployeePayrollService
@@ -51,7 +52,19 @@ public class EmployeePayrollService
 		try
 		{
 			if (ioService.equals(IOService.DATABASE_IO))
-				return this.employeePayrollData = EmployeePayrollDatabaseService.getInstance().readData();
+				return this.employeePayrollData = EmployeePayrollDatabaseService.getInstance().readData(null, null);
+            return this.employeePayrollData;
+        } catch (EmployeePayrollException employeePayrollException) {
+            throw new EmployeePayrollException("Cannot execute query", EmployeePayrollException.ExceptionType.CANNOT_EXECUTE_QUERY);
+        }
+    }
+
+    public List<EmployeePayrollData> readEmployeePayrollData(IOService ioService, String start, String end) throws EmployeePayrollException {
+        try {
+            LocalDate startLocalDate = LocalDate.parse(start);
+            LocalDate endLocalDate = LocalDate.parse(end);
+            if (ioService.equals(IOService.DATABASE_IO))
+                return employeePayrollDatabaseService.readData(startLocalDate, endLocalDate);
 			return this.employeePayrollData;
 		} catch (EmployeePayrollException employeePayrollException)
 		{
