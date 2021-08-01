@@ -10,10 +10,14 @@ public class EmployeePayrollService
 	}
 
 	private List<EmployeePayrollData> employeePayrollData;
+	private EmployeePayrollDatabaseService employeePayrollDatabaseService;
 
+    public EmployeePayrollService() {
+        employeePayrollDatabaseService = EmployeePayrollDatabaseService.getInstance();
+    }
 	public void updateEmployeeSalary(String name, double salary) throws EmployeePayrollException
 	{
-		int result = new EmployeePayrollDatabaseService().updateEmployeeData(name, salary);
+		int result = EmployeePayrollDatabaseService.getInstance().updateEmployeeData(name, salary);
 		if (result == 0)
 			throw new EmployeePayrollException("Salary update failed",
 					EmployeePayrollException.ExceptionType.UPDATE_FAILED);
@@ -27,12 +31,12 @@ public class EmployeePayrollService
 		return this.employeePayrollData.stream()
 				.filter(employeePayrollDataItem -> employeePayrollDataItem.name.equals(name)).findFirst().orElse(null);
 	}
-
+	
 	public boolean checkEmployeePayrollInSyncWithDatabase(String name) throws EmployeePayrollException
 	{
 		try
 		{
-			List<EmployeePayrollData> employeePayrollData = new EmployeePayrollDatabaseService()
+			List<EmployeePayrollData> employeePayrollData = EmployeePayrollDatabaseService.getInstance()
 					.getEmployeePayrollData(name);
 			return employeePayrollData.get(0).equals(getEmployeePayrollData(name));
 		} catch (EmployeePayrollException employeePayrollException)
@@ -47,7 +51,7 @@ public class EmployeePayrollService
 		try
 		{
 			if (ioService.equals(IOService.DATABASE_IO))
-				return this.employeePayrollData = new EmployeePayrollDatabaseService().readData();
+				return this.employeePayrollData = EmployeePayrollDatabaseService.getInstance().readData();
 			return this.employeePayrollData;
 		} catch (EmployeePayrollException employeePayrollException)
 		{
