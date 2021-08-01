@@ -90,9 +90,7 @@ public class EmployeePayrollService
 		}
 	}
 
-	public void addNewEmployee(String name, double salary, LocalDate startDate, String gender)
-			throws EmployeePayrollException
-	{
-		employeePayrollData.add(employeePayrollDatabaseService.addNewEmployeeToPayrollDetails(name, salary, startDate, gender));
+	 public void addNewEmployee(String name, double salary, LocalDate startDate, String gender, String department) throws EmployeePayrollException {
+	        employeePayrollData.add(employeePayrollDatabaseService.addNewEmployee(name, salary, startDate, gender, department));
 	}
 }
