@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.bridgelabz.employeepayroll.EmployeePayrollData;
+import com.bridgelabz.employeepayroll.EmployeePayrollException;
 import com.bridgelabz.employeepayroll.EmployeePayrollService;
 
 import static com.bridgelabz.employeepayroll.EmployeePayrollService.IOService.DATABASE_IO;
@@ -13,17 +14,17 @@ import static com.bridgelabz.employeepayroll.EmployeePayrollService.IOService.DA
 public class EmployeePayrollTest
 {
 	@Test
-    public void givenEmployeePayrollData_WhenRetrieved_ShouldMatchNumberOfEmployees() {
+    public void givenEmployeePayrollData_WhenRetrieved_ShouldMatchNumberOfEmployees() throws EmployeePayrollException {
         EmployeePayrollService employeePayrollService = new EmployeePayrollService();
         List<EmployeePayrollData> employeePayrollData = employeePayrollService.readEmployeePayrollData(DATABASE_IO);
         Assert.assertEquals(3, employeePayrollData.size());
     }
 	@Test
-    public void givenNewSalaryForEmployee_WhenUpdated_ShouldSyncWithDatabase() {
+    public void givenNewSalaryForEmployee_WhenUpdated_ShouldSyncWithDatabase() throws EmployeePayrollException {
         EmployeePayrollService employeePayrollService = new EmployeePayrollService();
         List<EmployeePayrollData> employeePayrollData = employeePayrollService.readEmployeePayrollData(DATABASE_IO);
-        employeePayrollService.updateEmployeeSalary("Bill", 3000000);
-        boolean result = employeePayrollService.checkEmployeePayrollInSyncWithDatabase("Bill");
+        employeePayrollService.updateEmployeeSalary("Charlie", 30000);
+        boolean result = employeePayrollService.checkEmployeePayrollInSyncWithDatabase("Charlie");
         Assert.assertTrue(result);
     }
 }

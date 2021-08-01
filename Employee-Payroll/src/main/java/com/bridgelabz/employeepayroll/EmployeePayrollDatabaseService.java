@@ -26,7 +26,7 @@ public class EmployeePayrollDatabaseService
 		return connection;
 	}
 
-	public List<EmployeePayrollData> readData()
+	public List<EmployeePayrollData> readData() throws EmployeePayrollException
 	{
 		String sql = "select * from employee_payroll";
 		List<EmployeePayrollData> employeePayrollData = new ArrayList();
@@ -37,31 +37,24 @@ public class EmployeePayrollDatabaseService
 			employeePayrollData = this.getEmployeePayrollData(resultSet);
 		} catch (SQLException sqlException)
 		{
-			sqlException.printStackTrace();
+			throw new EmployeePayrollException("Cannot connect to database", EmployeePayrollException.ExceptionType.CONNECTION_FAIL);
 		}
 		return employeePayrollData;
 	}
 
-	public int updateEmployeeData(String name, double salary)
-	{
-		return this.updateEmployeeDataUsingPreparedStatement(name, salary);
-	}
-
-	public int updateEmployeeDataUsingPreparedStatement(String name, double salary)
-	{
-		String sql = String.format("UPDATE employee_payroll SET Salary = %.2f WHERE Name = '%s';", salary, name);
+	public int updateEmployeeData(String name, double salary) throws EmployeePayrollException {
 		try (Connection connection = this.getConnection())
 		{
+			 String sql = String.format("UPDATE employee_payroll SET Salary = %.2f WHERE Name = '%s';", salary, name);
 			PreparedStatement preparedStatement = connection.prepareStatement(sql);
 			return preparedStatement.executeUpdate(sql);
 		} catch (SQLException sqlException)
 		{
-			sqlException.printStackTrace();
+			throw new EmployeePayrollException("Cannot connect to database", EmployeePayrollException.ExceptionType.CONNECTION_FAIL);
 		}
-		return 0;
 	}
 
-	public List<EmployeePayrollData> getEmployeePayrollData(String name)
+	public List<EmployeePayrollData> getEmployeePayrollData(String name) throws EmployeePayrollException
 	{
 		List<EmployeePayrollData> employeePayrollData = null;
 		if (this.employeePayrollPreparedStatement == null)
@@ -73,12 +66,12 @@ public class EmployeePayrollDatabaseService
 			employeePayrollData = this.getEmployeePayrollData(resultSet);
 		} catch (SQLException sqlException)
 		{
-			sqlException.printStackTrace();
+			throw new EmployeePayrollException("Cannot connect to database", EmployeePayrollException.ExceptionType.CONNECTION_FAIL);
 		}
 		return employeePayrollData;
 	}
 
-	private List<EmployeePayrollData> getEmployeePayrollData(ResultSet resultSet)
+	private List<EmployeePayrollData> getEmployeePayrollData(ResultSet resultSet) throws EmployeePayrollException 
 	{
 		List<EmployeePayrollData> employeePayrollData = new ArrayList();
 		try
@@ -93,17 +86,18 @@ public class EmployeePayrollDatabaseService
 			}
 		} catch (SQLException sqlException)
 		{
-			sqlException.printStackTrace();
+			throw new EmployeePayrollException("Cannot execute query", EmployeePayrollException.ExceptionType.CANNOT_EXECUTE_QUERY);
 		}
 		return employeePayrollData;
 	}
-	private void prepareStatementForEmployeeData() {
+	private void prepareStatementForEmployeeData() throws EmployeePayrollException
+	{
         try {
             Connection connection = this.getConnection();
             String sql = "SELECT * FROM employee_payroll WHERE Name = ?";
             employeePayrollPreparedStatement = connection.prepareStatement(sql);
         } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+        	 throw new EmployeePayrollException("Cannot execute query", EmployeePayrollException.ExceptionType.CANNOT_EXECUTE_QUERY);
         }
     }
 }
